@@ -1,15 +1,14 @@
 import { QueryProvider } from "./query-provider";
-import { BrowserRouter } from "react-router-dom";
 import type { ReactNode } from "react";
 
 interface AppProviderProps {
   children: ReactNode;
 }
 
-export const AppProvider = ({ children }: AppProviderProps) => {
+export const AppProviders = ({ children }: AppProviderProps) => {
   return (
     <QueryProvider>
-      <BrowserRouter>{children}</BrowserRouter>
+      {children}
     </QueryProvider>
   );
 };
