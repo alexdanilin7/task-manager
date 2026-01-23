@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../../../entities/task/model/api';
-import { TaskCreateData } from '../../../entities/task/model/types';
+import type { TaskCreateData } from '../../../entities/task/model/types';
 import './task-create-form.scss';
 
 interface TaskCreateFormProps {
