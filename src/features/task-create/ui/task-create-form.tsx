@@ -26,7 +26,7 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
     reset,
   } = useForm<TaskCreateData>();
 
-  // Следим за значениями полей для предпросмотра и подсчета символов
+ 
   const titleValue = watch('title');
   const descriptionValue = watch('description');
 
@@ -40,16 +40,9 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
   const createMutation = useMutation({
     mutationFn: taskApi.createTask,
     onSuccess: () => {
-      // Показываем сообщение об успехе
       setShowSuccess(true);
-      
-      // Обновляем кэш списка задач
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      
-      // Сбрасываем форму
       reset();
-      
-      // Скрываем сообщение через 3 секунды
       setTimeout(() => {
         setShowSuccess(false);
         if (onSuccess) onSuccess();
@@ -70,8 +63,6 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
   };
 
   const isSubmitting = createMutation.isPending;
-
-  // Рассчитываем прогресс для индикатора
   const titleProgress = Math.min((characterCount.title / 100) * 100, 100);
   const descriptionProgress = Math.min((characterCount.description / 1000) * 100, 100);
 
@@ -123,7 +114,7 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
         <textarea
           id="description"
           className={`task-create-form__textarea ${errors.description ? 'task-create-form__textarea--error' : ''}`}
-          placeholder="Опишите задачу максимально подробно. Что нужно сделать? Какие есть требования? Каковы критерии выполнения?"
+          placeholder="Опишите задачу максимально подробно."
           rows={6}
           disabled={isSubmitting}
           maxLength={1000}
@@ -154,7 +145,7 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
         </div>
         
         <div className="task-create-form__tip">
-          Чем подробнее описание, тем лучше понимание задачи. Укажите сроки, приоритет и дополнительные требования.
+         Укажите сроки, приоритет и дополнительные требования.
         </div>
       </div>
 
@@ -213,7 +204,7 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
         </button>
       </div>
 
-      {/* Оверлей загрузки */}
+      {/* Загрузка */}
       {isSubmitting && (
         <div className="task-create-form__loading-overlay">
           <div className="task-create-form__loading-spinner" />

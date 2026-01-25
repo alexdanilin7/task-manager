@@ -448,7 +448,7 @@
   }
 }
 
-// Анимации
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -519,7 +519,7 @@
   50% { transform: translateY(-10px); }
 }
 
-// Адаптивность
+
 @media (max-width: 768px) {
   .task-create-form {
     padding: 0 16px;
@@ -565,7 +565,7 @@
   }
 }
 
-// Темная тема
+
 @media (prefers-color-scheme: dark) {
   .task-create-form {
     &__title {
@@ -660,7 +660,6 @@
   }
 }
 
-// Принтер-дружественные стили
 @media print {
   .task-create-form {
     &__button,

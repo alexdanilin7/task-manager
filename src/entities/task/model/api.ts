@@ -3,11 +3,9 @@ import type{
   Task,
   TaskCreateData,
   TaskUpdateData,
-  TasksResponse,
 } from './types';
 
 export const taskApi = {
-  // Получение списка задач с пагинацией для бесконечного скролла
   async getInfiniteTasks({ pageParam = 1 }: { pageParam?: number }) {
     const response = await apiClient.get<Task[]>('/tasks', {
       params: {
@@ -17,7 +15,6 @@ export const taskApi = {
       },
     });
     
-    // Получаем заголовки для определения общего количества
     const totalCount = response.headers['x-total-count'] ? parseInt(response.headers['x-total-count'], 10) : response.data?.length || 0;
   
     return {
@@ -28,17 +25,15 @@ export const taskApi = {
     };
   },
 
-  // Получение одной задачи по ID
   async getTask(id: number): Promise<Task> {
     const response = await apiClient.get<Task>(`/tasks/${id}`);
     return response.data;
   },
 
-  // Создание новой задачи
   async createTask(data: TaskCreateData): Promise<Task> {
     const newTask = {
       ...data,
-      id: Date.now() + Math.floor(Math.random() * 1000), // Уникальный ID
+      id: Date.now() + Math.floor(Math.random() * 1000), 
       completed: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -48,7 +43,7 @@ export const taskApi = {
     return response.data;
   },
 
-  // Обновление задачи
+
   async updateTask(id: number, data: TaskUpdateData): Promise<Task> {
     const updatedTask = {
       ...data,
@@ -59,7 +54,7 @@ export const taskApi = {
     return response.data;
   },
 
-  // Удаление задачи
+
   async deleteTask(id: number): Promise<void> {
     await apiClient.delete(`/tasks/${id}`);
   },

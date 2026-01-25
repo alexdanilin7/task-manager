@@ -28,13 +28,10 @@ export const TaskList = () => {
       return lastPage.page < totalPages ? lastPage.page + 1 : undefined;
     },
     select: (data) => {
-      // Deduplicate tasks by ID to prevent duplication
       const allTasks = data.pages.flatMap(page => page.tasks);
       const uniqueTasks = allTasks.filter((task, index, self) =>
         index === self.findIndex(t => t.id === task.id)
       );
-      
-      // Reconstruct pages with unique tasks
       return {
         pages: data.pages.map(page => ({
           ...page,
@@ -48,7 +45,6 @@ export const TaskList = () => {
     initialPageParam: 1,
   });
 
-  // Безопасное извлечение задач с дедупликацией
   const tasks = data?.pages
     ?.flatMap((page) => page?.tasks || [])
     .filter((task, index, self) => index === self.findIndex(t => t.id === task.id)) || [];
@@ -60,7 +56,6 @@ export const TaskList = () => {
   const handleDelete = async (id: number) => {
     try {
       await taskApi.deleteTask(id);
-      // Инвалидируем кэш чтобы перезагрузить данные
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       console.log('Задача удалена:', id);
     } catch (error) {
@@ -70,13 +65,11 @@ export const TaskList = () => {
 
   const handleCreateSuccess = () => {
     setIsCreateModalOpen(false);
-    // Инвалидируем кэш чтобы перезагрузить данные
     queryClient.invalidateQueries({ queryKey: ['tasks'] });
   };
 
   const handleEditSuccess = () => {
     setEditingTask(null);
-    // Инвалидируем кэш чтобы перезагрузить данные
     queryClient.invalidateQueries({ queryKey: ['tasks'] });
   };
 

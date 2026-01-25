@@ -6,21 +6,21 @@ import './task-card.scss';
 interface TaskCardProps {
   task: Task;
   onEdit?: (task: Task) => void;
-  onDelete?: (id: number) => void; // Оставляем для обратной совместимости
+  onDelete?: (id: number) => void; 
   truncateDescription?: boolean;
 }
 
 export const TaskCard = ({
   task,
   onEdit,
-  onDelete, // Оставляем старый проп для совместимости
+  onDelete, 
   truncateDescription = true,
 }: TaskCardProps) => {
   const handleEdit = () => {
     if (onEdit) onEdit(task);
   };
 
-  // Обработчик удаления для старого API
+ 
   const handleLegacyDelete = () => {
     if (onDelete) onDelete(task.id);
   };
@@ -57,7 +57,7 @@ export const TaskCard = ({
             </button>
           )}
           
-          {/* Используем новый компонент удаления если onDelete не передан */}
+         
           {!onDelete ? (
             <TaskDeleteButton taskId={task.id} />
           ) : (

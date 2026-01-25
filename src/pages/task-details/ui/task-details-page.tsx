@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../../../entities/task/model/api';
 import { TaskDetailsCard } from '../../../entities/task/ui/task-details-card/task-details-card';
 import { TaskEditForm } from '../../../features/task-edit/ui/task-edit-form';
-import { TaskDeleteButton } from '../../../features/task-delete/ui/task-delete-button';
 
 export const TaskDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,15 +26,15 @@ export const TaskDetailsPage = () => {
 
   const handleEditSuccess = () => {
     setIsEditing(false);
-    // Обновляем данные задачи и списка задач
+    
     queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     queryClient.invalidateQueries({ queryKey: ['tasks'] });
   };
 
   const handleDeleteSuccess = () => {
-    // После удаления перенаправляем на главную страницу
+
     navigate('/');
-    // Инвалидируем кэш списка задач
+
     queryClient.invalidateQueries({ queryKey: ['tasks'] });
   };
 
@@ -78,7 +77,7 @@ export const TaskDetailsPage = () => {
             task={task}
             onEdit={() => setIsEditing(true)}
             onDelete={() => {
-              // Можно использовать модальное окно или напрямую TaskDeleteButton
+              
               if (window.confirm('Вы уверены, что хотите удалить эту задачу?')) {
                 taskApi.deleteTask(taskId)
                   .then(() => {

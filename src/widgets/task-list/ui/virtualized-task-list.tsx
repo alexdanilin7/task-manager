@@ -25,8 +25,6 @@ export const VirtualizedTaskList = ({
   });
 
   const virtualTasks = virtualizer.getVirtualItems();
-
-  // Если нет задач, показываем сообщение
   if (tasks.length === 0) {
     return (
       <div className="task-list-widget__empty">
@@ -63,7 +61,6 @@ export const VirtualizedTaskList = ({
           {virtualTasks.map((virtualTask) => {
             const task = tasks[virtualTask.index];
             
-            // Проверяем, что задача существует
             if (!task || !task.id) {
               return (
                 <div
