@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { Task } from '../../../entities/task/model/types';
 import { TaskCard } from '../../../entities/task/ui/task-card/task-card';
