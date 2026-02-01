@@ -31,7 +31,7 @@ npm run dev
 Запуск бэкенда и фронтенда:
 
 ```bash
-npm run devsatrt
+npm run devsart
 ```
 
 Сборка приложения:
