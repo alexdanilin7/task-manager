@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
+import clsx from 'clsx';
 import type { Task } from '../../model/types';
-import './task-details-card.scss';
+import styles from './task-details-card.module.scss';
 
 interface TaskDetailsCardProps {
   task: Task;
@@ -24,50 +25,51 @@ export const TaskDetailsCard = ({
   };
 
   return (
-    <div className="task-details">
-      <div className="task-details__header">
+    <div className={styles.details}>
+      <div className={styles.header}>
         <Link to="/">
-          <button className="task-details__back-button">
+          <button className={styles.backButton}>
             ← Назад к списку
           </button>
         </Link>
         
-        <div className="task-details__title-container">
-          <div className="task-details__id">Задача #{task.id}</div>
-          <h1 className="task-details__title">{task.title}</h1>
+        <div className={styles.titleContainer}>
+          <div className={styles.id}>Задача #{task.id}</div>
+          <h1 className={styles.title}>{task.title}</h1>
         </div>
       </div>
       
-      <div className="task-details__content">
-        <div className="task-details__section">
-          <h2 className="task-details__section-title">Описание</h2>
-          <div className="task-details__description">
+      <div className={styles.content}>
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Описание</h2>
+          <div className={styles.description}>
             {task.description}
           </div>
         </div>
         
-        <div className="task-details__section">
-          <h2 className="task-details__section-title">Информация</h2>
-          <div className="task-details__meta">
-            <div className="task-details__meta-item">
-              <span className="task-details__meta-label">Статус</span>
-              <span className={`task-details__meta-value ${
-                task.completed ? 'task-details__meta-value--completed' : 'task-details__meta-value--pending'
-              }`}>
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Информация</h2>
+          <div className={styles.meta}>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Статус</span>
+              <span className={clsx(styles.metaValue, {
+                [styles.completed]: task.completed,
+                [styles.pending]: !task.completed,
+              })}>
                 {task.completed ? 'Выполнена' : 'В процессе'}
               </span>
             </div>
             
-            <div className="task-details__meta-item">
-              <span className="task-details__meta-label">Создана</span>
-              <span className="task-details__meta-value">
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Создана</span>
+              <span className={styles.metaValue}>
                 {formatDate(task.createdAt)}
               </span>
             </div>
             
-            <div className="task-details__meta-item">
-              <span className="task-details__meta-label">Обновлена</span>
-              <span className="task-details__meta-value">
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Обновлена</span>
+              <span className={styles.metaValue}>
                 {formatDate(task.updatedAt)}
               </span>
             </div>
@@ -75,10 +77,10 @@ export const TaskDetailsCard = ({
         </div>
         
         {(onEdit || onDelete) && (
-          <div className="task-details__actions">
+          <div className={styles.actions}>
             {onEdit && (
               <button
-                className="task-details__button task-details__button--edit"
+                className={clsx(styles.button, styles.edit)}
                 onClick={onEdit}
               >
                 Редактировать задачу
@@ -87,7 +89,7 @@ export const TaskDetailsCard = ({
             
             {onDelete && (
               <button
-                className="task-details__button task-details__button--delete"
+                className={clsx(styles.button, styles.delete)}
                 onClick={onDelete}
               >
                 Удалить задачу

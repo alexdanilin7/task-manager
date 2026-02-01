@@ -28,6 +28,11 @@ npm run mock-server
 ```bash
 npm run dev
 ```
+Запуск бэкенда и фронтенда:
+
+```bash
+npm run devsatrt
+```
 
 Сборка приложения:
 

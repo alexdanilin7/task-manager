@@ -1,0 +1,78 @@
+.delete {
+  display: inline-block;
+}
+
+.confirm {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 250px;
+}
+
+.confirmText {
+  color: #856404;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 13px;
+  padding: 8px;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 4px;
+  border-left: 3px solid #dc3545;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.init {
+    background: #dc3545;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #c82333;
+    }
+  }
+
+  &.cancel {
+    background: #6c757d;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #545b62;
+    }
+  }
+
+  &.delete {
+    background: #dc3545;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #c82333;
+    }
+  }
+}

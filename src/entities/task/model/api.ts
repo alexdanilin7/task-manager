@@ -3,25 +3,28 @@ import type{
   Task,
   TaskCreateData,
   TaskUpdateData,
+  TasksResponse,
 } from './types';
 
 export const taskApi = {
-  async getInfiniteTasks({ pageParam = 1 }: { pageParam?: number }) {
+  
+  async getInfiniteTasks({ pageParam = 1 }: { pageParam?: number }):Promise<TasksResponse> {
     const response = await apiClient.get<Task[]>('/tasks', {
       params: {
-        _page: pageParam,
-        _limit: 10,
+        _start: (pageParam-1)*15,
+        _end: (pageParam-1)*15 + 15,
         _sort: 'id'
       },
     });
-    
-    const totalCount = response.headers['x-total-count'] ? parseInt(response.headers['x-total-count'], 10) : response.data?.length || 0;
-  
+    // todo fix total count PROBLEM IN JSON_SERVER
+    const totalCountHeader = await apiClient.get<Task[]>('/tasks');
+    const totalCount = totalCountHeader.data.length? totalCountHeader.data.length : 15;
+    const tasks = Array.isArray(response.data) ? response.data : [];
     return {
-      tasks: response.data || [],
+      tasks,
       total: totalCount,
       page: pageParam,
-      limit: 10,
+      limit: 15, 
     };
   },
 
@@ -29,7 +32,7 @@ export const taskApi = {
     const response = await apiClient.get<Task>(`/tasks/${id}`);
     return response.data;
   },
-
+  
   async createTask(data: TaskCreateData): Promise<Task> {
     const newTask = {
       ...data,

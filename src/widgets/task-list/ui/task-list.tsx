@@ -1,135 +1,176 @@
-import { useState } from 'react';
+import { useState, useCallback} from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { taskApi } from '../../../entities/task/model/api';
 import type { Task } from '../../../entities/task/model/types';
-import { TaskCreateForm } from '../../../features/task-create/ui/task-create-form';
-import { TaskEditForm } from '../../../features/task-edit/ui/task-edit-form';
+import { TaskCreateForm } from '../../../features/task-create';
+import { TaskEditForm } from '../../../features/task-edit';
 import { VirtualizedTaskList } from './virtualized-task-list';
-import './task-list.scss';
+import styles from './task-list.module.scss';
 
 export const TaskList = () => {
-  const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const queryClient = useQueryClient();
 
+
+  const handleEdit = useCallback((task: Task) => {
+    setEditingTask(task);
+  }, []);
+
+  const handleDelete = useCallback(async (id: number) => {
+    try {
+      // удаляем из кэша
+      queryClient.setQueryData(['tasks'], (old: any) => {
+        if (!old || !old.pages) return old;
+        
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            tasks: page.tasks.filter((task: any) => task.id !== id),
+          })),
+        };
+      });
+
+      // удаление на сервере
+      await taskApi.deleteTask(id);
+      
+      // Инвалидируем кэш для перезагрузки
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      
+    } catch (error) {
+      console.error('Ошибка при удалении задачи:', error);
+      // В случае ошибки восстанавливаем данные
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    }
+  }, [queryClient]);
+
+  const handleCreateSuccess = useCallback(() => {
+    setIsCreateModalOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  }, [queryClient]);
+
+  const handleEditSuccess = useCallback(() => {
+    setEditingTask(null);
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  }, [queryClient]);
+
+  // Infinite query hook 
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
     isError,
     error,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ['tasks'],
     queryFn: taskApi.getInfiniteTasks,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage) return undefined;
+      
       const totalPages = Math.ceil(lastPage.total / lastPage.limit);
-      return lastPage.page < totalPages ? lastPage.page + 1 : undefined;
-    },
-    select: (data) => {
-      const allTasks = data.pages.flatMap(page => page.tasks);
-      const uniqueTasks = allTasks.filter((task, index, self) =>
-        index === self.findIndex(t => t.id === task.id)
-      );
-      return {
-        pages: data.pages.map(page => ({
-          ...page,
-          tasks: page.tasks.filter((task, index, self) =>
-            index === self.findIndex(t => t.id === task.id)
-          )
-        })),
-        pageParams: data.pageParams
-      };
+      const currentPage = allPages.length;
+      
+      console.log(`📄 Страница ${currentPage} из ${totalPages}, всего задач: ${lastPage.total}`);
+      
+      return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     initialPageParam: 1,
+    
+    staleTime: 3000, 
+    gcTime: 5 * 60 * 1000, 
+    refetchOnWindowFocus: false,
+    
   });
 
-  const tasks = data?.pages
-    ?.flatMap((page) => page?.tasks || [])
-    .filter((task, index, self) => index === self.findIndex(t => t.id === task.id)) || [];
+  // Собираем ВСЕ задачи 
+  const allTasks = data?.pages?.flatMap((page) => page?.tasks || []) || [];
 
-  const handleEdit = (task: Task) => {
-    setEditingTask(task);
-  };
+  const uniqueTasks = Array.from(
+    new Map(allTasks.map(task => [task.id, task])).values()
+  );
 
-  const handleDelete = async (id: number) => {
-    try {
-      await taskApi.deleteTask(id);
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      console.log('Задача удалена:', id);
-    } catch (error) {
-      console.error('Ошибка при удалении задачи:', error);
+  // Обработчик загрузки следующей страницы
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      console.log(`🎯 Ручная загрузка следующей страницы`);
+      fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleCreateSuccess = () => {
-    setIsCreateModalOpen(false);
-    queryClient.invalidateQueries({ queryKey: ['tasks'] });
-  };
-
-  const handleEditSuccess = () => {
-    setEditingTask(null);
-    queryClient.invalidateQueries({ queryKey: ['tasks'] });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="task-list-widget">
-        <div className="task-list-widget__loading">Загрузка задач...</div>
-      </div>
-    );
-  }
-
+  
   if (isError) {
     return (
-      <div className="task-list-widget">
-        <div className="task-list-widget__error">
-          Ошибка при загрузке задач: {(error as Error).message}
+      <div className={styles.widget}>
+        <div className={styles.error}>
+          <h3>Ошибка при загрузке задач</h3>
+          <p>{(error as Error).message}</p>
+          <button 
+            onClick={() => refetch()}
+            className={styles.retryButton}
+          >
+            Повторить попытку
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="task-list-widget">
-      <div className="task-list-widget__header">
-        <h1 className="task-list-widget__title">Список задач</h1>
-        <button
-          className="task-list-widget__create-button"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          + Создать задачу
-        </button>
+    <div className={styles.widget}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>
+          Список задач
+          {uniqueTasks.length > 0 && (
+            <span className={styles.count}> ({uniqueTasks.length} из {data?.pages?.[0]?.total || 0})</span>
+          )}
+        </h1>
+        <div className={styles.headerActions}>
+          <button
+            className={styles.createButton}
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            + Создать задачу
+          </button>
+        </div>
       </div>
 
-      <div className="task-list-widget__container">
+      <div className={styles.container}>
         <VirtualizedTaskList
-          tasks={tasks}
+          tasks={uniqueTasks}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={loadMore}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
-
-        {hasNextPage && (
-          <div className="task-list-widget__load-more">
+        
+        {/* {hasNextPage && (
+          <div className={styles.loadMoreInfo}>
+            <p>
+              Загружено {uniqueTasks.length} из {data?.pages?.[0]?.total || 0} задач
+              {isFetchingNextPage && ' (загрузка...)'}
+            </p>
             <button
-              className="task-list-widget__load-more-button"
-              onClick={() => fetchNextPage()}
+              onClick={loadMore}
+              className={styles.loadMoreButton}
               disabled={isFetchingNextPage}
             >
               {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
             </button>
           </div>
-        )}
+        )} */}
       </div>
 
       {isCreateModalOpen && (
-        <div className="task-list-widget__modal-overlay">
-          <div className="task-list-widget__modal">
-            <div className="task-list-widget__modal-header">
-              <h2 className="task-list-widget__modal-title">Создание задачи</h2>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Создание задачи</h2>
               <button
-                className="task-list-widget__modal-close"
+                className={styles.modalClose}
                 onClick={() => setIsCreateModalOpen(false)}
               >
                 ×
@@ -144,14 +185,14 @@ export const TaskList = () => {
       )}
 
       {editingTask && (
-        <div className="task-list-widget__modal-overlay">
-          <div className="task-list-widget__modal">
-            <div className="task-list-widget__modal-header">
-              <h2 className="task-list-widget__modal-title">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
                 Редактирование задачи #{editingTask.id}
               </h2>
               <button
-                className="task-list-widget__modal-close"
+                className={styles.modalClose}
                 onClick={() => setEditingTask(null)}
               >
                 ×

@@ -1,0 +1,1 @@
+{"version":3,"file":"task-details-card.d.ts","sourceRoot":"","sources":["task-details-card.tsx"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,IAAI,EAAE,MAAM,mBAAmB,CAAC;AAG9C,UAAU,oBAAoB;IAC5B,IAAI,EAAE,IAAI,CAAC;IACX,MAAM,CAAC,EAAE,MAAM,IAAI,CAAC;IACpB,QAAQ,CAAC,EAAE,MAAM,IAAI,CAAC;CACvB;AAED,eAAO,MAAM,eAAe,GAAI,6BAI7B,oBAAoB,4CAuFtB,CAAC"}

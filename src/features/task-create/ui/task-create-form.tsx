@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import clsx from 'clsx';
 import { taskApi } from '../../../entities/task/model/api';
 import type { TaskCreateData } from '../../../entities/task/model/types';
-import './task-create-form.scss';
+import styles from './task-create-form.module.scss';
 
 interface TaskCreateFormProps {
   onSuccess?: () => void;
@@ -26,7 +27,6 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
     reset,
   } = useForm<TaskCreateData>();
 
- 
   const titleValue = watch('title');
   const descriptionValue = watch('description');
 
@@ -43,6 +43,7 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
       setShowSuccess(true);
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       reset();
+      
       setTimeout(() => {
         setShowSuccess(false);
         if (onSuccess) onSuccess();
@@ -67,17 +68,19 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
   const descriptionProgress = Math.min((characterCount.description / 1000) * 100, 100);
 
   return (
-    <form className="task-create-form" onSubmit={handleSubmit(onSubmit)}>
-      <h2 className="task-create-form__title">Создание новой задачи</h2>
+    <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+      <h2 className={styles.title}>Создание новой задачи</h2>
 
-      <div className="task-create-form__field task-create-form__field--with-icon task-create-form__field--title">
-        <label htmlFor="title" className="task-create-form__label task-create-form__label--required">
+      <div className={styles.field}>
+        <label htmlFor="title" className={clsx(styles.label, styles.required)}>
           Заголовок задачи
         </label>
         <input
           id="title"
           type="text"
-          className={`task-create-form__input ${errors.title ? 'task-create-form__input--error' : ''}`}
+          className={clsx(styles.input, {
+            [styles.error]: errors.title,
+          })}
           placeholder="Введите краткое и понятное название задачи"
           disabled={isSubmitting}
           maxLength={100}
@@ -88,33 +91,35 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
           })}
         />
         {errors.title && (
-          <span className="task-create-form__error">{errors.title.message}</span>
+          <span className={styles.error}>{errors.title.message}</span>
         )}
         
-        <div className="task-create-form__character-count">
-          <span className={`task-create-form__counter ${
-            characterCount.title > 90 ? 'task-create-form__counter--warning' : ''
-          }`}>
+        <div className={styles.counter}>
+          <span className={clsx({
+            [styles.warning]: characterCount.title > 90,
+          })}>
             {characterCount.title}/100 символов
           </span>
         </div>
         
-        <div className="task-create-form__progress-bar">
+        <div className={styles.progressBar}>
           <div 
-            className="task-create-form__progress-fill" 
+            className={styles.progressFill} 
             style={{ width: `${titleProgress}%` }}
           />
         </div>
       </div>
 
-      <div className="task-create-form__field task-create-form__field--with-icon task-create-form__field--description">
-        <label htmlFor="description" className="task-create-form__label task-create-form__label--required">
+      <div className={styles.field}>
+        <label htmlFor="description" className={clsx(styles.label, styles.required)}>
           Подробное описание
         </label>
         <textarea
           id="description"
-          className={`task-create-form__textarea ${errors.description ? 'task-create-form__textarea--error' : ''}`}
-          placeholder="Опишите задачу максимально подробно."
+          className={clsx(styles.textarea, {
+            [styles.error]: errors.description,
+          })}
+          placeholder="Опишите задачу максимально подробно..."
           rows={6}
           disabled={isSubmitting}
           maxLength={1000}
@@ -125,90 +130,62 @@ export const TaskCreateForm = ({ onSuccess, onCancel }: TaskCreateFormProps) => 
           })}
         />
         {errors.description && (
-          <span className="task-create-form__error">{errors.description.message}</span>
+          <span className={styles.error}>{errors.description.message}</span>
         )}
         
-        <div className="task-create-form__character-count">
-          <span className={`task-create-form__counter ${
-            characterCount.description > 900 ? 'task-create-form__counter--warning' : 
-            characterCount.description > 950 ? 'task-create-form__counter--danger' : ''
-          }`}>
+        <div className={styles.counter}>
+          <span className={clsx({
+            [styles.warning]: characterCount.description > 900,
+            [styles.danger]: characterCount.description > 950,
+          })}>
             {characterCount.description}/1000 символов
           </span>
         </div>
         
-        <div className="task-create-form__progress-bar">
+        <div className={styles.progressBar}>
           <div 
-            className="task-create-form__progress-fill" 
+            className={styles.progressFill} 
             style={{ width: `${descriptionProgress}%` }}
           />
         </div>
         
-        <div className="task-create-form__tip">
-         Укажите сроки, приоритет и дополнительные требования.
+        <div className={styles.tip}>
+          Чем подробнее описание, тем лучше понимание задачи.
         </div>
       </div>
 
-      {/* Предпросмотр */}
-      {(titleValue || descriptionValue) && (
-        <div className="task-create-form__preview">
-          <div className="task-create-form__preview-title">Предпросмотр</div>
-          <div className="task-create-form__preview-content">
-            {titleValue ? (
-              <>
-                <strong>{titleValue}</strong>
-                <br />
-                {descriptionValue || <span className="task-create-form__preview-empty">Описание не указано</span>}
-              </>
-            ) : (
-              <span className="task-create-form__preview-empty">Заполните поля выше для предпросмотра</span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Сообщение об успехе */}
       {showSuccess && (
-        <div className="task-create-form__success-message">
-          <div className="task-create-form__success-message-icon">🎉</div>
-          <div className="task-create-form__success-message-text">Задача успешно создана!</div>
-          <div className="task-create-form__success-message-subtext">
-            Задача добавлена в список и доступна для просмотра
-          </div>
+        <div className={styles.successMessage}>
+          <div>🎉</div>
+          <div>Задача успешно создана!</div>
+          <div>Задача добавлена в список и доступна для просмотра</div>
         </div>
       )}
 
-      <div className="task-create-form__actions">
+      <div className={styles.actions}>
         <button
           type="button"
-          className="task-create-form__button task-create-form__button--cancel"
+          className={clsx(styles.button, styles.cancel)}
           onClick={handleCancel}
           disabled={isSubmitting}
         >
-          <span className="task-create-form__button-icon">←</span>
           Отмена
         </button>
         <button
           type="submit"
-          className={`task-create-form__button task-create-form__button--submit ${
-            isSubmitting ? 'task-create-form__button--loading' : ''
-          }`}
+          className={clsx(styles.button, styles.submit, {
+            [styles.loading]: isSubmitting,
+          })}
           disabled={isSubmitting}
         >
-          {isSubmitting ? '' : (
-            <>
-              Создать задачу
-              <span className="task-create-form__button-icon">+</span>
-            </>
-          )}
+          {isSubmitting ? '' : 'Создать задачу'}
         </button>
       </div>
 
-      {/* Загрузка */}
       {isSubmitting && (
-        <div className="task-create-form__loading-overlay">
-          <div className="task-create-form__loading-spinner" />
-          <div className="task-create-form__loading-text">
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingSpinner} />
+          <div className={styles.loadingText}>
             Создание задачи...
           </div>
         </div>

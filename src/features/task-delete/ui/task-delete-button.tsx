@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import clsx from 'clsx';
 import { taskApi } from '../../../entities/task/model/api';
-//import './task-delete-button.scss';
+import styles from './task-delete-button.module.scss';
 
 interface TaskDeleteButtonProps {
   taskId: number;
@@ -11,13 +12,13 @@ interface TaskDeleteButtonProps {
 export const TaskDeleteButton = ({ taskId, onSuccess }: TaskDeleteButtonProps) => {
   const queryClient = useQueryClient();
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Используем мутацию с инвалидацией кэша
   const deleteMutation = useMutation({
     mutationFn: taskApi.deleteTask,
     onMutate: async (deletedId) => {
-      setIsDeleting(true);
+      // Сбрасываем ошибку
+      setError(null);
       
       // Отменяем текущие запросы
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
@@ -40,21 +41,30 @@ export const TaskDeleteButton = ({ taskId, onSuccess }: TaskDeleteButtonProps) =
       
       return { previousTasks };
     },
-    onError: (err, deletedId, context) => {
-      // В случае ошибки восстанавливаем предыдущее состояние
+    onError: (err: any, _deletedId, context) => {
+      console.error('Delete error:', err);
+      
+      // Устанавливаем понятное сообщение об ошибке
+      if (err.response?.status === 404) {
+        setError('Задача уже была удалена или не существует');
+      } else {
+        setError(err.message || 'Не удалось удалить задачу');
+      }
+      
+      // Восстанавливаем предыдущее состояние
       if (context?.previousTasks) {
         queryClient.setQueryData(['tasks'], context.previousTasks);
       }
-      setIsDeleting(false);
+      
       setIsConfirming(false);
     },
     onSuccess: () => {
-      // Инвалидируем кэш чтобы перезагрузить данные
-      // queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Убираем дублирование
+      // Инвалидируем кэш
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       
-      setIsDeleting(false);
       setIsConfirming(false);
+      setError(null);
       
       if (onSuccess) {
         onSuccess();
@@ -73,36 +83,45 @@ export const TaskDeleteButton = ({ taskId, onSuccess }: TaskDeleteButtonProps) =
 
   const handleCancel = () => {
     setIsConfirming(false);
+    setError(null);
   };
 
   return (
-    <div className="task-delete">
+    <div className={styles.delete}>
       {isConfirming ? (
-        <div className="task-delete__confirm">
-          <span className="task-delete__confirm-text">
+        <div className={styles.confirm}>
+          <span className={styles.confirmText}>
             Вы уверены, что хотите удалить эту задачу?
           </span>
-          <div className="task-delete__confirm-actions">
+          
+          {error && (
+            <div className={styles.error}>
+              {error}
+            </div>
+          )}
+          
+          <div className={styles.confirmActions}>
             <button
-              className="task-delete__button task-delete__button--cancel"
+              className={clsx(styles.button, styles.cancel)}
               onClick={handleCancel}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
             >
               Отмена
             </button>
             <button
-              className="task-delete__button task-delete__button--delete"
+              className={clsx(styles.button, styles.delete)}
               onClick={handleDelete}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
             >
-              {isDeleting ? 'Удаление...' : 'Да, удалить'}
+              {deleteMutation.isPending ? 'Удаление...' : 'Да, удалить'}
             </button>
           </div>
         </div>
       ) : (
         <button
-          className="task-delete__button task-delete__button--init"
+          className={clsx(styles.button, styles.init)}
           onClick={handleDelete}
+          disabled={deleteMutation.isPending}
         >
           Удалить
         </button>

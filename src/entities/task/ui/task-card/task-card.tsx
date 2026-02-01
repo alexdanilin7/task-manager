@@ -1,69 +1,70 @@
 import { Link } from 'react-router-dom';
+import clsx from 'clsx';
 import type { Task } from '../../model/types';
-import { TaskDeleteButton } from '../../../../features/task-delete/ui/task-delete-button';
-import './task-card.scss';
+import styles from './task-card.module.scss';
 
 interface TaskCardProps {
   task: Task;
   onEdit?: (task: Task) => void;
-  onDelete?: (id: number) => void; 
+  onDelete?: (id: number) => void;
   truncateDescription?: boolean;
 }
 
 export const TaskCard = ({
   task,
   onEdit,
-  onDelete, 
+  onDelete,
   truncateDescription = true,
 }: TaskCardProps) => {
   const handleEdit = () => {
     if (onEdit) onEdit(task);
   };
 
- 
-  const handleLegacyDelete = () => {
+  const handleDelete = () => {
     if (onDelete) onDelete(task.id);
   };
 
   return (
-    <div className="task-card">
-      <div className="task-card__header">
-        <h3 className="task-card__title">{task.title}</h3>
-        <span className="task-card__id">#{task.id}</span>
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <h3 className={styles.title}>{task.title}</h3>
+        <span className={styles.id}>#{task.id}</span>
       </div>
       
-      <div className={`task-card__description ${truncateDescription ? 'truncated' : ''}`}>
+      <div className={clsx(styles.description, {
+        [styles.truncated]: truncateDescription,
+      })}>
         {task.description}
       </div>
       
-      <div className="task-card__footer">
-        <span className={`task-card__status ${task.completed ? 'completed' : 'pending'}`}>
+      <div className={styles.footer}>
+        <span className={clsx(styles.status, {
+          [styles.completed]: task.completed,
+          [styles.pending]: !task.completed,
+        })}>
           {task.completed ? 'Выполнена' : 'В процессе'}
         </span>
         
-        <div className="task-card__actions">
+        <div className={styles.actions}>
           <Link to={`/tasks/${task.id}`}>
-            <button className="task-card__button task-card__button--view">
+            <button className={clsx(styles.button, styles.buttonView)}>
               Просмотр
             </button>
           </Link>
           
           {onEdit && (
             <button
-              className="task-card__button task-card__button--edit"
+              className={clsx(styles.button, styles.buttonEdit)}
               onClick={handleEdit}
             >
               Редактировать
             </button>
           )}
           
-         
-          {!onDelete ? (
-            <TaskDeleteButton taskId={task.id} />
-          ) : (
+          {onDelete && (
             <button
-              className="task-card__button task-card__button--delete"
-              onClick={handleLegacyDelete}
+              className={clsx(styles.button, styles.buttonDelete)}
+              onClick={handleDelete}
             >
               Удалить
             </button>
