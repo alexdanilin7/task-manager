@@ -1,1 +1,0 @@
-{"version":3,"file":"query-provider.d.ts","sourceRoot":"","sources":["query-provider.tsx"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,OAAO,CAAC;AAYvC,UAAU,kBAAkB;IAC1B,QAAQ,EAAE,SAAS,CAAC;CACrB;AAED,eAAO,MAAM,aAAa,GAAI,cAAc,kBAAkB,4CAO7D,CAAC"}
